@@ -374,16 +374,49 @@ export default function Home() {
       )}
 
       {pastWinners.length > 0 && (
-        <div style={{ marginTop: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>
-          <h2 style={{ background: 'linear-gradient(90deg, #fde047, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', borderBottom: '1px solid rgba(250, 204, 21, 0.2)', paddingBottom: '0.8rem', marginBottom: '2rem', textAlign: 'center', fontSize: '1.8rem', fontWeight: '800' }}>
-            🎖️ Campeones de la última Polla ({pastWinners[0].match_desc})
-          </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
+        <div
+          style={{
+            marginTop: '1.75rem',
+            marginBottom: '1.25rem',
+            padding: '1.1rem 1rem',
+            background: 'rgba(255,255,255,0.02)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '16px',
+            textAlign: 'center',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '0.9rem',
+              color: 'var(--text-secondary)',
+              marginBottom: '0.35rem',
+              fontWeight: 600,
+              letterSpacing: '0.3px',
+              textTransform: 'uppercase',
+            }}
+          >
+            Historial
+          </div>
+          <div style={{ fontSize: '1.05rem', fontWeight: 800, marginBottom: '0.85rem' }}>
+            🎖️ Campeones anteriores ({pastWinners[0].match_desc})
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '10px' }}>
             {pastWinners.map((w, idx) => (
-              <div key={idx} className="winner-item winner-vip" style={{ flexDirection: 'column', textAlign: 'center', alignItems: 'center', gap: '6px' }}>
-                <span style={{ fontSize: '1.4rem' }}>🏆</span>
-                <span style={{ fontWeight: 800, fontSize: '1.15rem' }}>{w.name}</span>
-                <span style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)' }}>{w.exact_score}</span>
+              <div
+                key={idx}
+                style={{
+                  background: 'rgba(255,255,255,0.03)',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  borderRadius: '999px',
+                  padding: '0.5rem 0.85rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                }}
+              >
+                <span style={{ fontSize: '0.95rem' }}>🏆</span>
+                <span style={{ fontWeight: 800, fontSize: '0.95rem' }}>{w.name}</span>
+                <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.65)' }}>{w.exact_score}</span>
               </div>
             ))}
           </div>
