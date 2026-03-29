@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const API_URL = '/api';
 
@@ -47,8 +47,8 @@ export default function Home() {
 
   const trends = matchConfig ? getTrends() : null;
 
-  const filteredParticipants = participants.filter(p => 
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredParticipants = (Array.isArray(participants) ? participants : []).filter(p =>
+    String(p?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleShare = async () => {
@@ -71,12 +71,70 @@ export default function Home() {
     }
   };
 
+  const fetchWinners = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/winners`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error al obtener ganadores');
+      setWinners(data.winners || []);
+      setPastWinners(data.pastWinners || []);
+      setLosers(data.losers || []);
+    } catch (error) {
+      console.error('Error fetching winners:', error);
+      setWinners([]);
+      setPastWinners([]);
+      setLosers([]);
+    }
+  }, []);
+
+  const fetchParticipants = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/participants`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error al obtener participantes');
+      setParticipants(Array.isArray(data) ? data : data?.participants || []);
+    } catch (e) {
+      console.error(e);
+      setParticipants([]);
+    }
+  }, []);
+
+  const fetchStatus = useCallback(async () => {
+    try {
+      const res = await fetch(`${API_URL}/status`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Error al obtener estado');
+      setMatchStatus(data.status);
+      setMatchResult(data.result);
+      setMatchPeriod(data.period);
+      setMatchElapsed(data.calculatedElapsed || 0);
+      setTimerRunning(data.timer_status === 'running');
+      if (data.matchConfig) {
+        setMatchConfig(data.matchConfig);
+      }
+      if (data.status === 'finished' || data.status === 'live') {
+        fetchWinners();
+      }
+    } catch (error) {
+      console.error('Error fetching status:', error);
+      setMatchStatus('pending');
+      setMatchResult(null);
+      setMatchPeriod('');
+      setMatchElapsed(0);
+      setTimerRunning(false);
+      setMatchConfig(null);
+    }
+  }, [fetchWinners]);
+
   useEffect(() => {
     fetchStatus();
     fetchParticipants();
+  }, [fetchStatus, fetchParticipants]);
 
+  useEffect(() => {
+    if (!matchConfig?.match_date) return;
+    setIsMatchLive(false);
     const timer = setInterval(() => {
-      if (!matchConfig) return;
       const matchStartTime = new Date(matchConfig.match_date);
       const now = new Date();
       const difference = matchStartTime - now;
@@ -93,58 +151,15 @@ export default function Home() {
         });
       }
     }, 1000);
+    return () => clearInterval(timer);
+  }, [matchConfig]);
 
+  useEffect(() => {
     const pollTimer = setInterval(() => {
       fetchStatus();
     }, 30000);
-
-    return () => {
-      clearInterval(timer);
-      clearInterval(pollTimer);
-    };
-  }, []);
-
-  const fetchParticipants = async () => {
-    try {
-      const res = await fetch(`${API_URL}/participants`);
-      const data = await res.json();
-      setParticipants(data);
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  const fetchStatus = async () => {
-    try {
-      const res = await fetch(`${API_URL}/status`);
-      const data = await res.json();
-      setMatchStatus(data.status);
-      setMatchResult(data.result);
-      setMatchPeriod(data.period);
-      setMatchElapsed(data.calculatedElapsed || 0);
-      setTimerRunning(data.timer_status === 'running');
-      if (data.matchConfig) {
-        setMatchConfig(data.matchConfig);
-      }
-      if (data.status === 'finished' || data.status === 'live') {
-        fetchWinners();
-      }
-    } catch (error) {
-      console.error('Error fetching status:', error);
-    }
-  };
-
-  const fetchWinners = async () => {
-    try {
-      const res = await fetch(`${API_URL}/winners`);
-      const data = await res.json();
-      setWinners(data.winners || []);
-      setPastWinners(data.pastWinners || []);
-      setLosers(data.losers || []);
-    } catch (error) {
-      console.error('Error fetching winners:', error);
-    }
-  };
+    return () => clearInterval(pollTimer);
+  }, [fetchStatus]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

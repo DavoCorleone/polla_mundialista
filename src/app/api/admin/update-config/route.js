@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import pool, { initDb } from '@/lib/db';
+import { isValidFlagImageUrl, FLAG_URL_REQUIREMENTS } from '@/lib/flag-url';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,6 +23,13 @@ export async function POST(req) {
 
     if (!teamAName || !teamBName || !matchDate) {
       return NextResponse.json({ error: 'Faltan datos de configuración' }, { status: 400 });
+    }
+
+    if (!isValidFlagImageUrl(teamAFlag) || !isValidFlagImageUrl(teamBFlag)) {
+      return NextResponse.json(
+        { error: `URL de bandera no válida. ${FLAG_URL_REQUIREMENTS}` },
+        { status: 400 }
+      );
     }
 
     await pool.query(

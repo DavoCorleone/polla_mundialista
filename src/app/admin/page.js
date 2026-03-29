@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { isValidFlagImageUrl, FLAG_URL_REQUIREMENTS } from '@/lib/flag-url';
 
 const API_URL = '/api';
 
@@ -32,7 +34,6 @@ export default function AdminPage() {
               teamAFlag: data.matchConfig.team_a_flag || '',
               teamBName: data.matchConfig.team_b_name || '',
               teamBFlag: data.matchConfig.team_b_flag || '',
-              matchDate: localIso,
               matchDate: localIso,
               description: data.matchConfig.description || ''
             });
@@ -168,6 +169,11 @@ export default function AdminPage() {
     e.preventDefault();
     if (!checkPassword()) return;
 
+    if (!isValidFlagImageUrl(configForm.teamAFlag) || !isValidFlagImageUrl(configForm.teamBFlag)) {
+      setMessage({ text: FLAG_URL_REQUIREMENTS, type: 'error' });
+      return;
+    }
+
     setIsLoading(true);
     setMessage({ text: '', type: '' });
 
@@ -279,8 +285,20 @@ export default function AdminPage() {
               <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamAName} onChange={e => setConfigForm({...configForm, teamAName: e.target.value})} />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Bandera (URL)</label>
-              <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamAFlag} onChange={e => setConfigForm({...configForm, teamAFlag: e.target.value})} />
+              <label className="form-label">Bandera (enlace imagen)</label>
+              <input
+                type="url"
+                inputMode="url"
+                autoComplete="off"
+                className="form-input"
+                style={{ padding: '0.8rem' }}
+                value={configForm.teamAFlag}
+                onChange={e => setConfigForm({ ...configForm, teamAFlag: e.target.value })}
+                placeholder="https://…/bandera.svg"
+              />
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+                .svg, .png, .jpg o .webp
+              </p>
             </div>
           </div>
 
@@ -290,8 +308,20 @@ export default function AdminPage() {
               <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamBName} onChange={e => setConfigForm({...configForm, teamBName: e.target.value})} />
             </div>
             <div className="form-group" style={{ marginBottom: 0 }}>
-              <label className="form-label">Bandera (URL)</label>
-              <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamBFlag} onChange={e => setConfigForm({...configForm, teamBFlag: e.target.value})} />
+              <label className="form-label">Bandera (enlace imagen)</label>
+              <input
+                type="url"
+                inputMode="url"
+                autoComplete="off"
+                className="form-input"
+                style={{ padding: '0.8rem' }}
+                value={configForm.teamBFlag}
+                onChange={e => setConfigForm({ ...configForm, teamBFlag: e.target.value })}
+                placeholder="https://…/bandera.png"
+              />
+              <p style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.35rem' }}>
+                .svg, .png, .jpg o .webp
+              </p>
             </div>
           </div>
 
@@ -322,9 +352,9 @@ export default function AdminPage() {
       </div>
 
       <div style={{ marginTop: '2.5rem', paddingTop: '1.5rem', borderTop: '1px solid var(--card-border)' }}>
-        <a href="/" style={{ color: 'var(--secondary-blue)', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+        <Link href="/" style={{ color: 'var(--secondary-blue)', textDecoration: 'none', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
           &larr; Volver a la Polla Pública
-        </a>
+        </Link>
       </div>
     </div>
   );
