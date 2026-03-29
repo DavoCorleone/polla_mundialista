@@ -9,7 +9,6 @@ export default function AdminPage() {
   const [scoreMorocco, setScoreMorocco] = useState('');
   const [period, setPeriod] = useState('1er Tiempo');
   const [password, setPassword] = useState('');
-  const [configPassword, setConfigPassword] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [matchConfig, setMatchConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -167,10 +166,7 @@ export default function AdminPage() {
 
   const handleSaveConfig = async (e) => {
     e.preventDefault();
-    if (!configPassword) {
-      setMessage({ text: '⚠️ Ingresa la clave en el panel de configuración para guardar.', type: 'error' });
-      return;
-    }
+    if (!checkPassword()) return;
 
     setIsLoading(true);
     setMessage({ text: '', type: '' });
@@ -179,7 +175,7 @@ export default function AdminPage() {
       const res = await fetch(`${API_URL}/admin/update-config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...configForm, adminPassword: configPassword }),
+        body: JSON.stringify({ ...configForm, adminPassword: password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -206,6 +202,20 @@ export default function AdminPage() {
       <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>
         Inicia el reloj del partido, actualiza el marcador en vivo y, cuando termine, selecciona el resultado oficial para cerrar las predicciones y generar a los ganadores.
       </p>
+
+      <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'left' }}>
+        <label htmlFor="global-password" style={{ display: 'block', marginBottom: '0.8rem', fontWeight: 'bold', color: '#fca5a5', fontSize: '1.1rem' }}>🔑 Clave Maestra de Administración</label>
+        <input 
+          type="password"
+          id="global-password"
+          className="form-input"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Ingresa tu clave aquí para habilitar todas las funciones..."
+          style={{ width: '100%', borderColor: 'rgba(239, 68, 68, 0.5)', background: 'rgba(0,0,0,0.3)' }}
+        />
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.8rem' }}>Esta clave es requerida para usar el reloj, actualizar el marcador, guardar configuraciones o reiniciar la plataforma.</p>
+      </div>
 
       <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'center' }}>
         <h3 style={{ color: '#fcd34d', marginBottom: '1rem', fontSize: '1.2rem' }}>⏱️ Reloj del Partido: <span style={{ color: 'white', fontWeight: 'bold' }}>{timerStatus === 'running' ? timerElapsed + '+' : timerElapsed}&apos;</span></h3>
@@ -240,18 +250,6 @@ export default function AdminPage() {
             onChange={(e) => setPeriod(e.target.value)}
             placeholder="Ej. 1er Tiempo, Min. 25..."
             maxLength="30"
-          />
-        </div>
-
-        <div className="form-group" style={{ marginBottom: '1.5rem' }}>
-          <label htmlFor="password" className="form-label">Clave de Administración</label>
-          <input 
-            type="password"
-            id="password"
-            className="form-input"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Introduce la clave"
           />
         </div>
 
@@ -305,11 +303,6 @@ export default function AdminPage() {
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Descripción / Torneo</label>
             <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.description} onChange={e => setConfigForm({...configForm, description: e.target.value})} />
-          </div>
-
-          <div className="form-group" style={{ marginBottom: 0, marginTop: '1rem' }}>
-            <label className="form-label" style={{ color: '#f87171' }}>Clave de Administración (Requerida)</label>
-            <input type="password" className="form-input" style={{ padding: '0.8rem', borderColor: 'rgba(248,113,113,0.5)' }} placeholder="Tu clave segura" value={configPassword} onChange={e => setConfigPassword(e.target.value)} />
           </div>
 
           <button type="submit" className="btn btn-secondary" style={{ marginTop: '1rem' }} disabled={isLoading}>

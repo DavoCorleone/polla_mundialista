@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import pool, { initDb } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
+    await initDb();
     const payload = await req.json();
     const adminPassword = payload.adminPassword;
     
