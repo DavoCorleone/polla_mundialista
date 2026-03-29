@@ -12,14 +12,29 @@ export default function AdminPage() {
   const [message, setMessage] = useState({ text: '', type: '' });
   const [matchConfig, setMatchConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-
-
+  const [configForm, setConfigForm] = useState({
+    teamAName: '', teamAFlag: '', teamBName: '', teamBFlag: '', matchDate: '', description: ''
+  });
 
   useEffect(() => {
     fetch(`${API_URL}/status`)
       .then(res => res.json())
       .then(data => {
-        if (data.matchConfig) setMatchConfig(data.matchConfig);
+        if (data.matchConfig) {
+          setMatchConfig(data.matchConfig);
+          try {
+            const d = new Date(data.matchConfig.match_date);
+            const localIso = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+            setConfigForm({
+              teamAName: data.matchConfig.team_a_name || '',
+              teamAFlag: data.matchConfig.team_a_flag || '',
+              teamBName: data.matchConfig.team_b_name || '',
+              teamBFlag: data.matchConfig.team_b_flag || '',
+              matchDate: localIso,
+              description: data.matchConfig.description || ''
+            });
+          } catch(e) {}
+        }
       })
       .catch(console.error);
   }, []);
@@ -124,6 +139,37 @@ export default function AdminPage() {
     }
   };
 
+  const handleSaveConfig = async (e) => {
+    e.preventDefault();
+    if (!checkPassword()) return;
+
+    setIsLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const res = await fetch(`${API_URL}/admin/update-config`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...configForm, adminPassword: password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMessage({ text: 'Configuración general guardada exitosamente ✅', type: 'success' });
+      setMatchConfig({
+        team_a_name: configForm.teamAName,
+        team_a_flag: configForm.teamAFlag,
+        team_b_name: configForm.teamBName,
+        team_b_flag: configForm.teamBFlag,
+        match_date: configForm.matchDate,
+        description: configForm.description
+      });
+    } catch (error) {
+      setMessage({ text: error.message, type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="card">
       <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-red)' }}>Administración del Partido</h2>
@@ -185,6 +231,48 @@ export default function AdminPage() {
           </div>
         )}
       </form>
+
+      <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--card-border)', textAlign: 'left' }}>
+        <h3 style={{ marginBottom: '1.5rem', color: 'var(--secondary-blue)' }}>⚙️ Configuración del Partido</h3>
+        <form onSubmit={handleSaveConfig} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Equipo 1 (Nombre)</label>
+              <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamAName} onChange={e => setConfigForm({...configForm, teamAName: e.target.value})} />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Bandera (URL)</label>
+              <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamAFlag} onChange={e => setConfigForm({...configForm, teamAFlag: e.target.value})} />
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Equipo 2 (Nombre)</label>
+              <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamBName} onChange={e => setConfigForm({...configForm, teamBName: e.target.value})} />
+            </div>
+            <div className="form-group" style={{ marginBottom: 0 }}>
+              <label className="form-label">Bandera (URL)</label>
+              <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.teamBFlag} onChange={e => setConfigForm({...configForm, teamBFlag: e.target.value})} />
+            </div>
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Fecha del Partido</label>
+            <input type="datetime-local" className="form-input" style={{ padding: '0.8rem' }} value={configForm.matchDate} onChange={e => setConfigForm({...configForm, matchDate: e.target.value})} />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0 }}>
+            <label className="form-label">Descripción / Torneo</label>
+            <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.description} onChange={e => setConfigForm({...configForm, description: e.target.value})} />
+          </div>
+
+          <button type="submit" className="btn btn-secondary" style={{ marginTop: '1rem' }} disabled={isLoading}>
+            {isLoading ? '...' : '💾 Guardar Equipos y Fecha'}
+          </button>
+        </form>
+      </div>
 
       <div className="reset-section">
         <h3 style={{ marginBottom: '1rem', color: '#f87171' }}>Zona de Peligro</h3>
