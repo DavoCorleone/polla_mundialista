@@ -3,6 +3,10 @@ import './globals.css';
 export const metadata = {
   title: 'Polla Mundialista | Grupo Palacios',
   description: 'Participa en la polla mundialista de Grupo Palacios para el partido Ecuador vs Marruecos.',
+  robots: {
+    index: false,
+    follow: false,
+  },
   icons: {
     icon: '/logo-gp-favicon.svg',
   },

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 
 const API_URL = '/api';
+const ENABLE_SHARING = process.env.NEXT_PUBLIC_ENABLE_SHARING === 'true';
 
 export default function Home() {
   const [name, setName] = useState('');
@@ -52,6 +53,7 @@ export default function Home() {
   );
 
   const handleShare = async () => {
+    if (!ENABLE_SHARING) return;
     if (!matchConfig) return;
     const text = `¡Únete a la Polla Mundialista: ${matchConfig.team_a_name} vs ${matchConfig.team_b_name}! ⚽🏆\n\nDemuestra tu conocimiento y pronostica el marcador exacto.\n\nParticipa aquí: ${window.location.origin}`;
     
@@ -360,11 +362,13 @@ export default function Home() {
           </div>
         )}
 
-        <div style={{ marginTop: '1.5rem' }}>
-          <button type="button" className="btn btn-secondary" onClick={handleShare} style={{ padding: '0.8rem', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', boxShadow: 'none' }}>
-            📤 Compartir con Amigos
-          </button>
-        </div>
+        {ENABLE_SHARING && (
+          <div style={{ marginTop: '1.5rem' }}>
+            <button type="button" className="btn btn-secondary" onClick={handleShare} style={{ padding: '0.8rem', fontSize: '1rem', background: 'rgba(255,255,255,0.1)', boxShadow: 'none' }}>
+              📤 Compartir con Amigos
+            </button>
+          </div>
+        )}
       </form>
       )}
 
