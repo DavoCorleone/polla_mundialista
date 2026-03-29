@@ -11,9 +11,7 @@ export async function POST(req) {
     const adminPassword = payload.adminPassword;
 
     if (!adminPassword || adminPassword.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
-      return NextResponse.json({ 
-        error: `No autorizado. T:${adminPassword?.length} E:${process.env.ADMIN_PASSWORD?.length}` 
-      }, { status: 401 });
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
     const { scoreEcuador, scoreMorocco, period } = payload;
