@@ -10,7 +10,7 @@ export async function GET() {
     const currentStatus = result.rows[0];
     const config = configResult.rows[0];
 
-    // Calculate exact elapsed minutes securely from the server
+    // Calcular minutos exactos desde el servidor para evitar que se desincronice
     let calculatedElapsed = currentStatus.base_minutes || 0;
     if (currentStatus.timer_status === 'running' && currentStatus.timer_start) {
       const startMs = new Date(currentStatus.timer_start).getTime();

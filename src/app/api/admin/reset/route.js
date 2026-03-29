@@ -10,7 +10,7 @@ export async function POST(req) {
     }
 
     if (clearPredictions) {
-      // Archive current winners before deleting
+      // Guardar ganadores actuales antes de limpiar todo
       const statusRes = await pool.query('SELECT status, result FROM match_status WHERE id = 1');
       const configRes = await pool.query('SELECT team_a_name, team_b_name FROM match_config WHERE id = 1');
       const { status, result } = statusRes.rows[0] || {};
@@ -21,7 +21,7 @@ export async function POST(req) {
         
         const winners = await pool.query('SELECT name, exact_score FROM predictions WHERE exact_score = $1', [result]);
         
-        // Clear previous archived winners and insert new ones
+        // Limpiar archivo anterior y agregar los nuevos
         await pool.query('TRUNCATE TABLE past_winners');
         
         for (const row of winners.rows) {

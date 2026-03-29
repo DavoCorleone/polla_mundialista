@@ -211,19 +211,20 @@ export default function Home() {
         </p>
         
         <div style={{ marginTop: '3rem' }}>
-          <h3 style={{ marginBottom: '1.5rem' }}>🌟 {matchStatus === 'live' ? 'Ganadores Parciales' : 'Ganadores'} 🌟</h3>
+          <h3 style={{ marginBottom: '1.5rem', background: 'linear-gradient(90deg, #fde047, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', fontSize: '1.8rem' }}>🌟 Ganadores Inmortales 🌟</h3>
           {winners.length > 0 ? (
             <div className="winners-list">
               {winners.map((winner, idx) => (
-                <div key={idx} className="winner-item">
-                  🏅 {winner.name}
+                <div key={idx} className="winner-item winner-vip">
+                  <span style={{ fontSize: '1.5rem' }}>👑</span>
+                  <span style={{ fontSize: '1.3rem', fontWeight: '800' }}>{winner.name}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <div style={{ padding: '2rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', marginBottom: '2rem' }}>
-              <p style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>
-                {matchStatus === 'live' ? 'Nadie está acertando este marcador exacto por ahora. 😢' : 'No hubo acertantes en esta ocasión. 😢'}
+            <div style={{ padding: '2.5rem', background: 'rgba(255,255,255,0.02)', borderRadius: '16px', border: '1px dashed rgba(255,255,255,0.1)', marginBottom: '2rem' }}>
+              <p style={{ fontSize: '1.3rem', color: 'var(--text-secondary)' }}>
+                {matchStatus === 'live' ? 'Nadie está acertando este marcador exacto por ahora. Haz magia.' : 'No hubo acertantes en esta ocasión. Corona vacante. 😢'}
               </p>
             </div>
           )}
@@ -353,18 +354,26 @@ export default function Home() {
       )}
 
       {pastWinners.length > 0 && (
-        <div className="winners-list" style={{ marginTop: '2.5rem', marginBottom: '2.5rem', opacity: 0.85 }}>
-          <h2 style={{ color: '#94a3b8', borderBottom: '1px solid rgba(148, 163, 184, 0.3)', paddingBottom: '0.5rem', marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.3rem' }}>
-            🎖️ Campeones Anteriores ({pastWinners[0].match_desc})
+        <div className="winners-list" style={{ marginTop: '2.5rem', marginBottom: '1rem' }}>
+          <h2 style={{ background: 'linear-gradient(90deg, #fde047, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', borderBottom: '1px solid rgba(250, 204, 21, 0.2)', paddingBottom: '0.8rem', marginBottom: '2rem', textAlign: 'center', fontSize: '1.8rem', fontWeight: '800' }}>
+            🎖️ Campeones de la última Polla ({pastWinners[0].match_desc})
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
             {pastWinners.map((w, idx) => (
-              <div key={idx} className="winner-item" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)', padding: '0.8rem' }}>
-                <span style={{ fontWeight: 600, fontSize: '1rem' }}>{w.name}</span>
-                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{w.exact_score}</span>
+              <div key={idx} className="winner-item winner-vip">
+                <span style={{ fontSize: '1.5rem' }}>🏆</span>
+                <span style={{ fontWeight: 800, fontSize: '1.2rem' }}>{w.name}</span>
+                <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginLeft: 'auto' }}>{w.exact_score}</span>
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {!isMatchLive && pastWinners.length > 0 && (
+        <div className="cta-banner">
+          <h3 style={{ fontSize: '1.3rem', color: 'white', marginBottom: '0.5rem' }}>¡El próximo campeón puedes ser TÚ! 👑</h3>
+          <p style={{ color: 'var(--text-secondary)' }}>Demuestra cuánto sabes de fútbol y deja tu pronóstico aquí abajo. 👇</p>
         </div>
       )}
 
