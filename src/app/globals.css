@@ -1,17 +1,17 @@
 :root {
-  --primary-red: #F30107;
-  --primary-red-hover: #D00106;
-  --secondary-blue: #185ADB;
-  --bg-gradient-start: #0f172a;
-  --bg-gradient-end: #1e293b;
-  --card-bg: rgba(255, 255, 255, 0.05);
-  --card-border: rgba(255, 255, 255, 0.1);
+  --primary-red: #E63946;
+  --primary-red-hover: #D90429;
+  --secondary-blue: #457B9D;
+  --bg-gradient-start: #0B0C10;
+  --bg-gradient-end: #1F2833;
+  --card-bg: linear-gradient(145deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.01) 100%);
+  --card-border: rgba(255, 255, 255, 0.08);
   --text-primary: #F8FAFC;
-  --text-secondary: #94A3B8;
+  --text-secondary: #C5C6C7;
   --font-heading: 'Rajdhani', sans-serif;
-  --font-body: 'Roboto', sans-serif;
-  --radius: 16px;
-  --shadow-glow: 0 0 20px rgba(243, 1, 7, 0.4);
+  --font-body: 'Inter', system-ui, sans-serif;
+  --radius: 20px;
+  --shadow-glow: 0 0 30px rgba(230, 57, 70, 0.3);
 }
 
 * {
@@ -67,11 +67,11 @@ h1, h2, h3, h4 {
 
 .card {
   background: var(--card-bg);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border: 1px solid var(--card-border);
   border-radius: var(--radius);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255,255,255,0.1);
   padding: 3rem;
   text-align: center;
   animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);

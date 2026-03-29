@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-import pool from '@/lib/db';
+import pool, { initDb } from '@/lib/db';
 
 export async function POST(req) {
   try {
-    const { scoreEcuador, scoreMorocco, adminPassword } = await req.json();
+    await initDb();
+    const { scoreEcuador, scoreMorocco, period, adminPassword } = await req.json();
 
     if (adminPassword !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
@@ -14,9 +15,10 @@ export async function POST(req) {
     }
 
     const exactScore = `${scoreEcuador}-${scoreMorocco}`;
+    const matchPeriod = period || '1er Tiempo';
 
-    await pool.query('UPDATE match_status SET status = $1, result = $2 WHERE id = 1', ['finished', exactScore]);
-    return NextResponse.json({ message: 'Resultado actualizado' });
+    await pool.query('UPDATE match_status SET status = $1, result = $2, period = $3 WHERE id = 1', ['live', exactScore, matchPeriod]);
+    return NextResponse.json({ message: 'Marcador en vivo actualizado' });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

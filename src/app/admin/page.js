@@ -1,18 +1,32 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const API_URL = '/api';
 
 export default function AdminPage() {
-  const [result, setResult] = useState('');
+  const [scoreEcuador, setScoreEcuador] = useState('');
+  const [scoreMorocco, setScoreMorocco] = useState('');
+  const [period, setPeriod] = useState('1er Tiempo');
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
+  const [matchConfig, setMatchConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
+
+
+  useEffect(() => {
+    fetch(`${API_URL}/status`)
+      .then(res => res.json())
+      .then(data => {
+        if (data.matchConfig) setMatchConfig(data.matchConfig);
+      })
+      .catch(console.error);
+  }, []);
+
   const checkPassword = () => {
-    if (password !== '032520543') {
-      setMessage({ text: 'Clave de administración incorrecta.', type: 'error' });
+    if (!password) {
+      setMessage({ text: 'Por favor, ingresa la clave de administración.', type: 'error' });
       return false;
     }
     return true;
@@ -32,7 +46,7 @@ export default function AdminPage() {
       const res = await fetch(`${API_URL}/admin/reset`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ clearPredictions }),
+        body: JSON.stringify({ clearPredictions, adminPassword: password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al reiniciar');
@@ -45,11 +59,38 @@ export default function AdminPage() {
     }
   };
 
+  const handleUpdateLive = async (e) => {
+    e.preventDefault();
+    if (!checkPassword()) return;
+    if (scoreEcuador === '' || scoreMorocco === '') {
+      setMessage({ text: 'Por favor, ingresa los goles para actualizar en vivo.', type: 'error' });
+      return;
+    }
+
+    setIsLoading(true);
+    setMessage({ text: '', type: '' });
+
+    try {
+      const res = await fetch(`${API_URL}/admin/update-live`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scoreEcuador, scoreMorocco, period, adminPassword: password }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMessage({ text: 'Marcador en vivo actualizado 🔴', type: 'success' });
+    } catch (error) {
+      setMessage({ text: error.message, type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSetResult = async (e) => {
     e.preventDefault();
     if (!checkPassword()) return;
-    if (!result) {
-      setMessage({ text: 'Por favor, selecciona un resultado.', type: 'error' });
+    if (scoreEcuador === '' || scoreMorocco === '') {
+      setMessage({ text: 'Por favor, ingresa los goles para ambos equipos.', type: 'error' });
       return;
     }
 
@@ -66,7 +107,7 @@ export default function AdminPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ result }),
+        body: JSON.stringify({ scoreEcuador, scoreMorocco, adminPassword: password }),
       });
 
       const data = await res.json();
@@ -91,19 +132,30 @@ export default function AdminPage() {
       </p>
 
       <form onSubmit={handleSetResult}>
-        <div className="form-group">
-          <label htmlFor="result" className="form-label">Resultado Oficial</label>
-          <select 
-            id="result" 
+        <div className="options-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '2rem' }}>
+          <div className="option-card" style={{ padding: '1.5rem', cursor: 'default' }}>
+            {matchConfig && <img src={matchConfig.team_a_flag} alt={matchConfig.team_a_name} className="option-logo" style={{ width: '60px', height: '60px' }} />}
+            <div className="option-text" style={{ marginBottom: '1rem', fontSize: '1rem' }}>{matchConfig ? matchConfig.team_a_name : 'Equipo 1'}</div>
+            <input type="number" className="form-input" min="0" placeholder="0" value={scoreEcuador} onChange={(e) => setScoreEcuador(e.target.value)} style={{ textAlign: 'center', fontSize: '2rem', padding: '0.5rem', fontWeight: 'bold' }} />
+          </div>
+          <div className="option-card" style={{ padding: '1.5rem', cursor: 'default' }}>
+            {matchConfig && <img src={matchConfig.team_b_flag} alt={matchConfig.team_b_name} className="option-logo" style={{ width: '60px', height: '60px' }} />}
+            <div className="option-text" style={{ marginBottom: '1rem', fontSize: '1rem' }}>{matchConfig ? matchConfig.team_b_name : 'Equipo 2'}</div>
+            <input type="number" className="form-input" min="0" placeholder="0" value={scoreMorocco} onChange={(e) => setScoreMorocco(e.target.value)} style={{ textAlign: 'center', fontSize: '2rem', padding: '0.5rem', fontWeight: 'bold' }} />
+          </div>
+        </div>
+
+        <div className="form-group" style={{ marginBottom: '1.5rem' }}>
+          <label htmlFor="period" className="form-label">Minuto / Periodo (Solo para En Vivo)</label>
+          <input 
+            type="text"
+            id="period"
             className="form-input"
-            value={result}
-            onChange={(e) => setResult(e.target.value)}
-          >
-            <option value="">-- Seleccionar Resultado --</option>
-            <option value="Ecuador">Ganó Ecuador</option>
-            <option value="Empate">Empate</option>
-            <option value="Marruecos">Ganó Marruecos</option>
-          </select>
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            placeholder="Ej. 1er Tiempo, Min. 25..."
+            maxLength="30"
+          />
         </div>
 
         <div className="form-group" style={{ marginBottom: '1.5rem' }}>
@@ -118,9 +170,14 @@ export default function AdminPage() {
           />
         </div>
 
-        <button type="submit" className="btn btn-secondary" disabled={isLoading}>
-          {isLoading ? 'Procesando...' : 'Finalizar Partido'}
-        </button>
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+          <button type="button" onClick={handleUpdateLive} className="btn" style={{ background: 'var(--primary-red)', flex: 1 }} disabled={isLoading}>
+            {isLoading ? '...' : '🔴 Actualizar en Vivo'}
+          </button>
+          <button type="submit" className="btn btn-secondary" style={{ flex: 1 }} disabled={isLoading}>
+            {isLoading ? '...' : '🏁 Finalizar Partido'}
+          </button>
+        </div>
 
         {message.text && (
           <div className={`message ${message.type}`}>

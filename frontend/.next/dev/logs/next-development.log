@@ -1,1 +1,2 @@
 {"timestamp":"00:34:50.552","source":"Server","level":"LOG","message":"○ Compiling /_not-found/page ..."}
+{"timestamp":"01:12:41.346","source":"Browser","level":"ERROR","message":"Failed to fetch RSC payload for http://localhost:3000/. Falling back to browser navigation. {}"}
