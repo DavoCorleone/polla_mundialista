@@ -131,7 +131,8 @@ export default function Home() {
   useEffect(() => {
     fetchStatus();
     fetchParticipants();
-  }, [fetchStatus, fetchParticipants]);
+    fetchWinners();
+  }, [fetchStatus, fetchParticipants, fetchWinners]);
 
   useEffect(() => {
     if (!matchConfig?.match_date) return;
