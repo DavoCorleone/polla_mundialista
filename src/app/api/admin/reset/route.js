@@ -5,11 +5,14 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const { clearPredictions, adminPassword } = await req.json();
+    const authHeader = req.headers.get('authorization');
+    const adminPassword = authHeader ? authHeader.replace('Bearer ', '') : '';
     
     if (adminPassword?.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const { clearPredictions } = await req.json();
 
     if (clearPredictions) {
       // Guardar ganadores actuales antes de limpiar todo

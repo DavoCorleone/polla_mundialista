@@ -5,11 +5,14 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const { scoreEcuador, scoreMorocco, adminPassword } = await req.json();
-
+    const authHeader = req.headers.get('authorization');
+    const adminPassword = authHeader ? authHeader.replace('Bearer ', '') : '';
+    
     if (adminPassword?.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const { scoreEcuador, scoreMorocco } = await req.json();
 
     if (scoreEcuador === undefined || scoreMorocco === undefined) {
       return NextResponse.json({ error: 'Faltan resultados' }, { status: 400 });

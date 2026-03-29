@@ -6,11 +6,15 @@ export const dynamic = 'force-dynamic';
 export async function POST(req) {
   try {
     await initDb();
-    const { scoreEcuador, scoreMorocco, period, adminPassword } = await req.json();
+    
+    const authHeader = req.headers.get('authorization');
+    const adminPassword = authHeader ? authHeader.replace('Bearer ', '') : '';
 
     if (adminPassword?.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
+
+    const { scoreEcuador, scoreMorocco, period } = await req.json();
 
     if (scoreEcuador === undefined || scoreMorocco === undefined) {
       return NextResponse.json({ error: 'Faltan resultados' }, { status: 400 });
