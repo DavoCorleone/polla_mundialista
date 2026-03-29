@@ -42,10 +42,11 @@ export async function POST(req) {
       [exactScore]
     );
 
-    // Si se confirma el resultado, reemplazamos el histórico (aunque no haya acertantes).
-    await pool.query('TRUNCATE TABLE past_winners');
-
+    // Importante: no borremos el historial si no hay acertantes.
+    // Así evitamos que un "match sin ganadores" elimine los ganadores anteriores
+    // (o que un mismatch de exact_score deje la tabla vacía).
     if (matchDesc && winners.rows.length > 0) {
+      await pool.query('TRUNCATE TABLE past_winners');
       for (const row of winners.rows) {
         await pool.query(
           'INSERT INTO past_winners (name, exact_score, match_desc) VALUES ($1, $2, $3)',
