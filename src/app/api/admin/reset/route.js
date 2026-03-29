@@ -15,33 +15,33 @@ export async function POST(req) {
 
     const { clearPredictions } = payload;
 
-    // Siempre intentamos archivar ganadores si existe un resultado en el tablero.
-    // Esto permite que "reiniciar" muestre la sección de ganadores anteriores incluso si
-    // no se eliminaron participantes.
-    const statusRes = await pool.query('SELECT status, result FROM match_status WHERE id = 1');
-    const configRes = await pool.query('SELECT team_a_name, team_b_name FROM match_config WHERE id = 1');
-    const { result } = statusRes.rows[0] || {};
+    // Normalmente, el histórico se archiva en /api/admin/set-result cuando se confirma el marcador.
+    // Si past_winners ya tiene datos, evitamos sobrescribir match_desc con una config que pudo cambiar.
+    const pastWinnersCountRes = await pool.query('SELECT COUNT(*)::int AS cnt FROM past_winners');
+    const pastWinnersCount = pastWinnersCountRes.rows[0]?.cnt || 0;
 
-    if (result) {
-      const { team_a_name, team_b_name } = configRes.rows[0] || {};
-      const matchDesc = `${team_a_name} vs ${team_b_name}`;
+    if (pastWinnersCount === 0) {
+      const statusRes = await pool.query('SELECT status, result FROM match_status WHERE id = 1');
+      const configRes = await pool.query('SELECT team_a_name, team_b_name FROM match_config WHERE id = 1');
+      const { result } = statusRes.rows[0] || {};
 
-      const winners = await pool.query(
-        'SELECT name, exact_score FROM predictions WHERE exact_score = $1',
-        [result]
-      );
+      if (result) {
+        const { team_a_name: teamAName, team_b_name: teamBName } = configRes.rows[0] || {};
+        const matchDesc = teamAName && teamBName ? `${teamAName} vs ${teamBName}` : null;
 
-      // Solo actualizamos el histórico si:
-      // - hay ganadores para ese resultado, o
-      // - el admin eligió eliminar participantes (lo que indica intención de refrescar el histórico)
-      if (winners.rows.length > 0 || clearPredictions) {
-        await pool.query('TRUNCATE TABLE past_winners');
-
-        for (const row of winners.rows) {
-          await pool.query(
-            'INSERT INTO past_winners (name, exact_score, match_desc) VALUES ($1, $2, $3)',
-            [row.name, row.exact_score, matchDesc]
+        if (matchDesc) {
+          const winners = await pool.query(
+            'SELECT name, exact_score FROM predictions WHERE exact_score = $1',
+            [result]
           );
+
+          await pool.query('TRUNCATE TABLE past_winners');
+          for (const row of winners.rows) {
+            await pool.query(
+              'INSERT INTO past_winners (name, exact_score, match_desc) VALUES ($1, $2, $3)',
+              [row.name, row.exact_score, matchDesc]
+            );
+          }
         }
       }
     }

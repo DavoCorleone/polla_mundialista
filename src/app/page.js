@@ -380,10 +380,10 @@ export default function Home() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
             {pastWinners.map((w, idx) => (
-              <div key={idx} className="winner-item winner-vip">
-                <span style={{ fontSize: '1.5rem' }}>🏆</span>
-                <span style={{ fontWeight: 800, fontSize: '1.2rem' }}>{w.name}</span>
-                <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.7)', marginLeft: 'auto' }}>{w.exact_score}</span>
+              <div key={idx} className="winner-item winner-vip" style={{ flexDirection: 'column', textAlign: 'center', alignItems: 'center', gap: '6px' }}>
+                <span style={{ fontSize: '1.4rem' }}>🏆</span>
+                <span style={{ fontWeight: 800, fontSize: '1.15rem' }}>{w.name}</span>
+                <span style={{ fontSize: '0.95rem', color: 'rgba(255,255,255,0.7)' }}>{w.exact_score}</span>
               </div>
             ))}
           </div>

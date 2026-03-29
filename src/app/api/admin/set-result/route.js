@@ -22,7 +22,37 @@ export async function POST(req) {
     const exactScore = `${scoreEcuador}-${scoreMorocco}`;
 
     await pool.query('UPDATE match_status SET status = $1, result = $2 WHERE id = 1', ['finished', exactScore]);
-    return NextResponse.json({ message: 'Resultado actualizado' });
+
+    // Archivo de ganadores: se hace aquí para que match_desc corresponda al partido
+    // del momento en que se confirma el resultado (no al momento de "reset").
+    const configRes = await pool.query(
+      'SELECT team_a_name, team_b_name FROM match_config WHERE id = 1'
+    );
+    const { team_a_name: teamAName, team_b_name: teamBName } = configRes.rows[0] || {};
+    const matchDesc = teamAName && teamBName ? `${teamAName} vs ${teamBName}` : null;
+
+    const winners = await pool.query(
+      'SELECT name, exact_score FROM predictions WHERE exact_score = $1',
+      [exactScore]
+    );
+
+    // Si se confirma el resultado, reemplazamos el histórico (aunque no haya acertantes).
+    await pool.query('TRUNCATE TABLE past_winners');
+
+    if (matchDesc && winners.rows.length > 0) {
+      for (const row of winners.rows) {
+        await pool.query(
+          'INSERT INTO past_winners (name, exact_score, match_desc) VALUES ($1, $2, $3)',
+          [row.name, row.exact_score, matchDesc]
+        );
+      }
+    }
+
+    return NextResponse.json({
+      message: 'Resultado actualizado',
+      exactScore,
+      winnersCount: winners.rows.length,
+    });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
