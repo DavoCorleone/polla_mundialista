@@ -374,7 +374,7 @@ export default function Home() {
       )}
 
       {pastWinners.length > 0 && (
-        <div className="winners-list" style={{ marginTop: '2.5rem', marginBottom: '1rem' }}>
+        <div style={{ marginTop: '2.5rem', marginBottom: '1rem', textAlign: 'center' }}>
           <h2 style={{ background: 'linear-gradient(90deg, #fde047, #f59e0b)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', borderBottom: '1px solid rgba(250, 204, 21, 0.2)', paddingBottom: '0.8rem', marginBottom: '2rem', textAlign: 'center', fontSize: '1.8rem', fontWeight: '800' }}>
             🎖️ Campeones de la última Polla ({pastWinners[0].match_desc})
           </h2>

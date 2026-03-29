@@ -19,7 +19,13 @@ export async function POST(req) {
       return NextResponse.json({ error: 'Faltan resultados' }, { status: 400 });
     }
 
-    const exactScore = `${scoreEcuador}-${scoreMorocco}`;
+    const sE = parseInt(scoreEcuador, 10);
+    const sM = parseInt(scoreMorocco, 10);
+    if (Number.isNaN(sE) || Number.isNaN(sM)) {
+      return NextResponse.json({ error: 'Resultados no válidos' }, { status: 400 });
+    }
+
+    const exactScore = `${sE}-${sM}`;
 
     await pool.query('UPDATE match_status SET status = $1, result = $2 WHERE id = 1', ['finished', exactScore]);
 
