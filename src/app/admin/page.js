@@ -9,6 +9,7 @@ export default function AdminPage() {
   const [scoreMorocco, setScoreMorocco] = useState('');
   const [period, setPeriod] = useState('1er Tiempo');
   const [password, setPassword] = useState('');
+  const [configPassword, setConfigPassword] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [matchConfig, setMatchConfig] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -168,7 +169,10 @@ export default function AdminPage() {
 
   const handleSaveConfig = async (e) => {
     e.preventDefault();
-    if (!checkPassword()) return;
+    if (!configPassword) {
+      setMessage({ text: '⚠️ Ingresa la clave en el panel de configuración para guardar.', type: 'error' });
+      return;
+    }
 
     setIsLoading(true);
     setMessage({ text: '', type: '' });
@@ -177,7 +181,7 @@ export default function AdminPage() {
       const res = await fetch(`${API_URL}/admin/update-config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...configForm, adminPassword: password }),
+        body: JSON.stringify({ ...configForm, adminPassword: configPassword }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -303,6 +307,11 @@ export default function AdminPage() {
           <div className="form-group" style={{ marginBottom: 0 }}>
             <label className="form-label">Descripción / Torneo</label>
             <input type="text" className="form-input" style={{ padding: '0.8rem' }} value={configForm.description} onChange={e => setConfigForm({...configForm, description: e.target.value})} />
+          </div>
+
+          <div className="form-group" style={{ marginBottom: 0, marginTop: '1rem' }}>
+            <label className="form-label" style={{ color: '#f87171' }}>Clave de Administración (Requerida)</label>
+            <input type="password" className="form-input" style={{ padding: '0.8rem', borderColor: 'rgba(248,113,113,0.5)' }} placeholder="Tu clave segura" value={configPassword} onChange={e => setConfigPassword(e.target.value)} />
           </div>
 
           <button type="submit" className="btn btn-secondary" style={{ marginTop: '1rem' }} disabled={isLoading}>
