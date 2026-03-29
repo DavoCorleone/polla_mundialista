@@ -5,14 +5,13 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req) {
   try {
-    const authHeader = req.headers.get('authorization');
-    const adminPassword = authHeader ? authHeader.replace('Bearer ', '') : '';
+    const payload = await req.json();
+    const adminPassword = payload.adminPassword;
 
-    if (adminPassword?.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
+    if (!adminPassword || adminPassword.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const payload = await req.json();
     const { 
       teamAName, teamAFlag, 
       teamBName, teamBFlag, 

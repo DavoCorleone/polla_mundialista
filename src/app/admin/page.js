@@ -66,11 +66,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(`${API_URL}/admin/reset`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`
-        },
-        body: JSON.stringify({ clearPredictions }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ clearPredictions, adminPassword: password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al reiniciar');
@@ -97,11 +94,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(`${API_URL}/admin/update-live`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`
-        },
-        body: JSON.stringify({ scoreEcuador, scoreMorocco, period }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scoreEcuador, scoreMorocco, period, adminPassword: password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -120,11 +114,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(`${API_URL}/admin/timer`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`
-        },
-        body: JSON.stringify({ action, baseMinutes: minutes })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, baseMinutes: minutes, adminPassword: password })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
@@ -156,11 +147,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(`${API_URL}/admin/set-result`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${password}`
-        },
-        body: JSON.stringify({ scoreEcuador, scoreMorocco }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scoreEcuador, scoreMorocco, adminPassword: password }),
       });
 
       const data = await res.json();
@@ -190,11 +178,8 @@ export default function AdminPage() {
     try {
       const res = await fetch(`${API_URL}/admin/update-config`, {
         method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${configPassword}`
-        },
-        body: JSON.stringify({ ...configForm }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...configForm, adminPassword: configPassword }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
