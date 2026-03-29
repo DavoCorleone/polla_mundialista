@@ -15,7 +15,8 @@ export async function POST(req) {
       const configRes = await pool.query('SELECT team_a_name, team_b_name FROM match_config WHERE id = 1');
       const { status, result } = statusRes.rows[0] || {};
       
-      if (status === 'finished' && result) {
+      // Permitir archivar ganadores siempre que haya un resultado en el tablero, incluso si no clickearon "Finalizar Partido"
+      if (result) {
         const { team_a_name, team_b_name } = configRes.rows[0] || {};
         const matchDesc = `${team_a_name} vs ${team_b_name}`;
         
