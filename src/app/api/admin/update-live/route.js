@@ -1,12 +1,14 @@
 import { NextResponse } from 'next/server';
 import pool, { initDb } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(req) {
   try {
     await initDb();
     const { scoreEcuador, scoreMorocco, period, adminPassword } = await req.json();
 
-    if (adminPassword !== process.env.ADMIN_PASSWORD) {
+    if (adminPassword?.trim() !== process.env.ADMIN_PASSWORD?.trim()) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
