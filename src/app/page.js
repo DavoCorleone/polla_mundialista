@@ -10,7 +10,10 @@ export default function Home() {
   const [scoreMorocco, setScoreMorocco] = useState('');
   const [message, setMessage] = useState({ text: '', type: '' });
   const [matchStatus, setMatchStatus] = useState('pending');
+  const [matchElapsed, setMatchElapsed] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
   const [winners, setWinners] = useState([]);
+  const [pastWinners, setPastWinners] = useState([]);
   const [losers, setLosers] = useState([]);
   const [participants, setParticipants] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -118,6 +121,8 @@ export default function Home() {
       setMatchStatus(data.status);
       setMatchResult(data.result);
       setMatchPeriod(data.period);
+      setMatchElapsed(data.calculatedElapsed || 0);
+      setTimerRunning(data.timer_status === 'running');
       if (data.matchConfig) {
         setMatchConfig(data.matchConfig);
       }
@@ -134,6 +139,7 @@ export default function Home() {
       const res = await fetch(`${API_URL}/winners`);
       const data = await res.json();
       setWinners(data.winners || []);
+      setPastWinners(data.pastWinners || []);
       setLosers(data.losers || []);
     } catch (error) {
       console.error('Error fetching winners:', error);
@@ -193,7 +199,7 @@ export default function Home() {
         `}} />
         {matchStatus === 'live' ? (
            <div style={{ display: 'inline-block', background: 'var(--primary-red)', color: 'white', padding: '5px 15px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', marginBottom: '1rem', animation: 'pulse 2s infinite' }}>
-             🔴 PARTIDO EN VIVO {matchPeriod ? `- ${matchPeriod.toUpperCase()}` : ''}
+             🔴 {timerRunning ? matchElapsed + '+' : matchElapsed}&apos; EN VIVO {matchPeriod ? `- ${matchPeriod.toUpperCase()}` : ''}
            </div>
         ) : (
            <div className="trophy-icon">🏆</div>
@@ -344,6 +350,22 @@ export default function Home() {
           </button>
         </div>
       </form>
+      )}
+
+      {pastWinners.length > 0 && (
+        <div className="winners-list" style={{ marginTop: '2.5rem', marginBottom: '2.5rem', opacity: 0.85 }}>
+          <h2 style={{ color: '#94a3b8', borderBottom: '1px solid rgba(148, 163, 184, 0.3)', paddingBottom: '0.5rem', marginBottom: '1.5rem', textAlign: 'center', fontSize: '1.3rem' }}>
+            🎖️ Campeones Anteriores ({pastWinners[0].match_desc})
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '10px' }}>
+            {pastWinners.map((w, idx) => (
+              <div key={idx} className="winner-item" style={{ background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.1)', padding: '0.8rem' }}>
+                <span style={{ fontWeight: 600, fontSize: '1rem' }}>{w.name}</span>
+                <span style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{w.exact_score}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {participants.length > 0 && (

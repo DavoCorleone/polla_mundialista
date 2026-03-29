@@ -15,6 +15,8 @@ export default function AdminPage() {
   const [configForm, setConfigForm] = useState({
     teamAName: '', teamAFlag: '', teamBName: '', teamBFlag: '', matchDate: '', description: ''
   });
+  const [timerStatus, setTimerStatus] = useState('stopped');
+  const [timerElapsed, setTimerElapsed] = useState(0);
 
   useEffect(() => {
     fetch(`${API_URL}/status`)
@@ -31,10 +33,13 @@ export default function AdminPage() {
               teamBName: data.matchConfig.team_b_name || '',
               teamBFlag: data.matchConfig.team_b_flag || '',
               matchDate: localIso,
+              matchDate: localIso,
               description: data.matchConfig.description || ''
             });
           } catch(e) {}
         }
+        if (data.timer_status) setTimerStatus(data.timer_status);
+        if (data.calculatedElapsed !== undefined) setTimerElapsed(data.calculatedElapsed);
       })
       .catch(console.error);
   }, []);
@@ -101,6 +106,28 @@ export default function AdminPage() {
     }
   };
 
+  const handleTimerAction = async (action, minutes) => {
+    if (!checkPassword()) return;
+    setIsLoading(true);
+    setMessage({ text: '', type: '' });
+    try {
+      const res = await fetch(`${API_URL}/admin/timer`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, baseMinutes: minutes, adminPassword: password })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      setMessage({ text: `Reloj ${action === 'start' ? 'iniciado' : 'detenido'} ⏱️`, type: 'success' });
+      setTimerStatus(action === 'start' ? 'running' : 'stopped');
+      setTimerElapsed(minutes);
+    } catch (e) {
+      setMessage({ text: e.message, type: 'error' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleSetResult = async (e) => {
     e.preventDefault();
     if (!checkPassword()) return;
@@ -156,6 +183,7 @@ export default function AdminPage() {
       if (!res.ok) throw new Error(data.error);
       setMessage({ text: 'Configuración general guardada exitosamente ✅', type: 'success' });
       setMatchConfig({
+        ...matchConfig,
         team_a_name: configForm.teamAName,
         team_a_flag: configForm.teamAFlag,
         team_b_name: configForm.teamBName,
@@ -173,9 +201,18 @@ export default function AdminPage() {
   return (
     <div className="card">
       <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-red)' }}>Administración del Partido</h2>
-      <p style={{ marginBottom: '2rem' }}>
-        Selecciona el resultado final para cerrar las predicciones y mostrar los ganadores.
+      <p style={{ marginBottom: '2rem', color: 'var(--text-secondary)' }}>
+        Inicia el reloj del partido, actualiza el marcador en vivo y, cuando termine, selecciona el resultado oficial para cerrar las predicciones y generar a los ganadores.
       </p>
+
+      <div style={{ background: 'rgba(255,255,255,0.05)', padding: '1.5rem', borderRadius: '12px', marginBottom: '2rem', textAlign: 'center' }}>
+        <h3 style={{ color: '#fcd34d', marginBottom: '1rem', fontSize: '1.2rem' }}>⏱️ Reloj del Partido: <span style={{ color: 'white', fontWeight: 'bold' }}>{timerStatus === 'running' ? timerElapsed + '+' : timerElapsed}&apos;</span></h3>
+        <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <button type="button" onClick={() => handleTimerAction('start', 0)} className="btn" style={{ background: '#10b981', padding: '0.8rem', flex: '1 1 auto', border: 'none' }} disabled={isLoading || timerStatus === 'running'}>▶ Iniciar 1er Tpo (0&apos;)</button>
+          <button type="button" onClick={() => handleTimerAction('stop', timerElapsed)} className="btn" style={{ background: '#f59e0b', padding: '0.8rem', flex: '1 1 auto', border: 'none' }} disabled={isLoading || timerStatus === 'stopped'}>⏸ Pausar Reloj</button>
+          <button type="button" onClick={() => handleTimerAction('start', 45)} className="btn" style={{ background: '#3b82f6', padding: '0.8rem', flex: '1 1 auto', border: 'none' }} disabled={isLoading || timerStatus === 'running'}>▶ Iniciar 2do Tpo (45&apos;)</button>
+        </div>
+      </div>
 
       <form onSubmit={handleSetResult}>
         <div className="options-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '2rem' }}>

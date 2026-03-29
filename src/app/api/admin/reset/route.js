@@ -9,10 +9,34 @@ export async function POST(req) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    await pool.query("UPDATE match_status SET status = 'pending', result = NULL WHERE id = 1");
     if (clearPredictions) {
+      // Archive current winners before deleting
+      const statusRes = await pool.query('SELECT status, result FROM match_status WHERE id = 1');
+      const configRes = await pool.query('SELECT team_a_name, team_b_name FROM match_config WHERE id = 1');
+      const { status, result } = statusRes.rows[0] || {};
+      
+      if (status === 'finished' && result) {
+        const { team_a_name, team_b_name } = configRes.rows[0] || {};
+        const matchDesc = `${team_a_name} vs ${team_b_name}`;
+        
+        const winners = await pool.query('SELECT name, exact_score FROM predictions WHERE exact_score = $1', [result]);
+        
+        // Clear previous archived winners and insert new ones
+        await pool.query('TRUNCATE TABLE past_winners');
+        
+        for (const row of winners.rows) {
+          await pool.query(
+            'INSERT INTO past_winners (name, exact_score, match_desc) VALUES ($1, $2, $3)',
+            [row.name, row.exact_score, matchDesc]
+          );
+        }
+      }
+
       await pool.query('DELETE FROM predictions');
     }
+    
+    await pool.query("UPDATE match_status SET status = 'pending', result = NULL, period = NULL, last_updated = NOW() WHERE id = 1");
+    
     return NextResponse.json({ message: 'Polla reiniciada con éxito' });
   } catch (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

@@ -7,7 +7,7 @@ export async function POST(req) {
       teamAName, teamAFlag, 
       teamBName, teamBFlag, 
       matchDate, description, 
-      adminPassword 
+      fixtureId, adminPassword 
     } = await req.json();
 
     if (adminPassword !== process.env.ADMIN_PASSWORD) {
@@ -22,9 +22,10 @@ export async function POST(req) {
       `UPDATE match_config SET 
         team_a_name = $1, team_a_flag = $2, 
         team_b_name = $3, team_b_flag = $4, 
-        match_date = $5, description = $6 
+        match_date = $5, description = $6,
+        fixture_id = $7
        WHERE id = 1`, 
-      [teamAName, teamAFlag, teamBName, teamBFlag, matchDate, description]
+      [teamAName, teamAFlag, teamBName, teamBFlag, matchDate, description, fixtureId || '']
     );
 
     return NextResponse.json({ message: 'Configuración de partido guardada exitosamente' });

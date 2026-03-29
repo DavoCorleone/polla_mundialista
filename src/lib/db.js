@@ -31,9 +31,13 @@ export const initDb = async () => {
         result TEXT
       );
       ALTER TABLE match_status ADD COLUMN IF NOT EXISTS period TEXT;
+      ALTER TABLE match_status ADD COLUMN IF NOT EXISTS last_updated TIMESTAMP;
+      ALTER TABLE match_status ADD COLUMN IF NOT EXISTS timer_status TEXT DEFAULT 'stopped';
+      ALTER TABLE match_status ADD COLUMN IF NOT EXISTS timer_start TIMESTAMP;
+      ALTER TABLE match_status ADD COLUMN IF NOT EXISTS base_minutes INTEGER DEFAULT 0;
       
-      INSERT INTO match_status (id, status, result, period) 
-      VALUES (1, 'pending', NULL, NULL) 
+      INSERT INTO match_status (id, status, result, period, last_updated, timer_status, base_minutes) 
+      VALUES (1, 'pending', NULL, NULL, NULL, 'stopped', 0) 
       ON CONFLICT (id) DO NOTHING;
 
       CREATE TABLE IF NOT EXISTS match_config (
@@ -43,12 +47,23 @@ export const initDb = async () => {
         team_b_name TEXT NOT NULL,
         team_b_flag TEXT NOT NULL,
         match_date TIMESTAMP NOT NULL,
-        description TEXT
+        description TEXT,
+        fixture_id TEXT
       );
 
-      INSERT INTO match_config (id, team_a_name, team_a_flag, team_b_name, team_b_flag, match_date, description)
-      VALUES (1, 'Ecuador', 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Flag_of_Ecuador.svg', 'Marruecos', 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Flag_of_Morocco.svg', '2026-03-27T15:15:00-05:00', '⚽ Amistoso Internacional')
+      ALTER TABLE match_config ADD COLUMN IF NOT EXISTS fixture_id TEXT;
+
+      INSERT INTO match_config (id, team_a_name, team_a_flag, team_b_name, team_b_flag, match_date, description, fixture_id)
+      VALUES (1, 'Ecuador', 'https://upload.wikimedia.org/wikipedia/commons/e/e8/Flag_of_Ecuador.svg', 'Marruecos', 'https://upload.wikimedia.org/wikipedia/commons/2/2c/Flag_of_Morocco.svg', '2026-03-27T15:15:00-05:00', '⚽ Amistoso Internacional', '')
       ON CONFLICT (id) DO NOTHING;
+
+      CREATE TABLE IF NOT EXISTS past_winners (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        exact_score TEXT NOT NULL,
+        match_desc TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
     `);
   } finally {
     client.release();
